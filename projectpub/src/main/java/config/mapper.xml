@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="aaa">
+	<!-- 요거다 -->
+	<!-- 전체 펍 가져오기 -->
+	<select id="count" resultType="int">
+		select count(*) from pub where p_pub_chk='Y'
+	</select>
+	
+	<!-- 소비자 전체 인원 -->
+	<select id="concount" resultType="int">
+		select count(*) from members where userchk='C'
+	</select>
+	
+	<!-- 판매자 수  -->
+	<select id="memycount" resultType="int">
+		<!-- 수정 -->
+	    select count(*) from members where userchk = 'S'
+	</select>
+	
+	<!-- 펍저장하기 -->
+	<insert id="save" parameterType="dto.PubDTO">
+		insert into pub
+		values(SEQ_pub_p_num.nextval,'test18',#{p_mupload},#{p_supload},#{p_title},#{p_contents},#{p_address},#{p_maxpeople},'Y')
+	</insert>
+
+
+	<update id="managero" parameterType="String">
+		update members
+		set allow_chk = 'Y' ,userchk='S'
+		where id=#{id}
+	</update>
+	
+	
+	<update id="managerc" parameterType="String">
+		update members
+		set allow_chk = 'N'
+		where id=#{id}
+	</update>
+
+	<update id="pok" parameterType="String">
+		update pub
+		set p_pub_chk='Y', pub_ok_date=to_char(sysdate,'YYYY-MM-DD')
+		where id=#{id}
+	</update>
+
+	<update id="pcan" parameterType="String">
+		update pub
+		set p_pub_chk='N'
+		where id=#{id}
+	</update>
+
+	<select id="dates" resultType="String">
+		select dates
+		from members where userchk!='A'
+	</select>
+	
+	<select id="memtotal" resultType="int">
+	    select count(*) from members where userchk!='A'
+	</select>
+	
+	<select id="mwcount" resultType="String">
+		select sex from members where userchk!='A'
+	</select>
+	
+	<select id="birth" resultType="String">
+		select birth from members where userchk!='A'	    
+	</select>
+	
+	<!-- 판매자 등업 인원 -->
+	<select id="memrcount" resultType="int">
+		select count(*) from MEMBERS where allow_chk='R'
+	</select>
+	
+	<!-- 판매자 등업 목록 -->
+	<select id="memr" resultType="dto.MemDTO">
+	    <![CDATA[
+select d.*
+from(select c.*,rownum as asd
+from(select b.*
+from(select rownum as rm, a.*
+from(select * from members where allow_chk='R')a)b
+order by b.rm desc)c)d
+where d.asd<=5
+	    ]]>
+	</select>
+	
+	<!-- 펍 등록대기 갯수 -->
+	<select id="suprcount" resultType="int">
+		select count(*) from pub where p_pub_chk='R'
+	</select>
+
+	<!-- 관리자 : Pub 신청 현황 -->
+	<resultMap type="dto.PubDTO" id="mypage_admin_pub"
+		autoMapping="false">
+		<result column="p_num" property="p_num" />
+		<result column="id" property="id" />
+		<result column="p_mupload" property="p_mupload" />
+		<result column="p_supload" property="p_supload" />
+		<result column="p_title" property="p_title" />
+		<result column="p_contents" property="p_contents" />
+		<result column="p_address" property="p_address" />
+		<result column="p_maxpeople" property="p_maxpeople" />
+		<result column="p_pub_chk" property="p_pub_chk" />
+		<!-- <result column="p_addr_post" property="p_addr_post"/> -->
+		<association property="members" javaType="dto.MemDTO">
+			<result column="name" property="name" />
+		</association>
+	</resultMap>
+
+	<select id="admin_pubjoin" resultMap="mypage_admin_pub">
+ <![CDATA[
+select rownum, a.*
+from(select p.*,m.name from pub p, members m where p.id=m.id and p.p_pub_chk='R' order by p_num desc)a
+where rownum<=5
+ ]]>
+	</select>
+	
+	<!-- 펍 수정 정보 -->
+<resultMap type="dto.MemDTO" id="mempub" autoMapping="false">
+<result column="id" property="id"/>
+<result column="name" property="name"/>
+<result column="saupja_num" property="saupja_num"/>
+<collection property="pub" javaType="java.util.List" ofType="dto.PubDTO" autoMapping="false">
+<result column="p_num" property="p_num"/>
+<result column="ppid" property="id"/>
+<result column="p_mupload" property="p_mupload"/>
+<result column="p_supload" property="p_supload"/>
+<result column="p_title" property="p_title"/>
+<result column="p_contents" property="p_contents"/>
+<result column="p_address" property="p_address"/>
+<result column="p_maxpeople" property="p_maxpeople"/>
+<result column="p_addr_post" property="p_addr_post"/>
+</collection>
+</resultMap>
+
+<select id="mempubinfo" parameterType="dto.MemDTO" resultMap="mempub">
+select m.* , p.p_num,p.id as ppid , p.p_mupload, p.p_supload, p.p_title, p.p_contents, p.p_address, p.p_maxpeople, p.p_pub_chk,p.p_addr_post
+from members m, pub p
+where m.id=p.id(+) and m.id=#{id}
+</select>
+<!-- END 펍 수정 정보 -->
+
+<resultMap type="dto.PubDTO" id="mem_star"
+		autoMapping="false">
+		<result column="p_num" property="p_num" />
+		<result column="id" property="id" />
+		<result column="p_mupload" property="p_mupload" />
+		<result column="p_supload" property="p_supload" />
+		<result column="p_title" property="p_title" />
+		<result column="p_contents" property="p_contents" />
+		<result column="p_address" property="p_address" />
+		<result column="p_maxpeople" property="p_maxpeople" />
+		<result column="p_pub_chk" property="p_pub_chk" />
+		<result column="p_addr_post" property="p_addr_post" />
+		<!-- <result column="p_addr_post" property="p_addr_post"/> -->
+		<association property="star" javaType="dto.StarsDTO">
+			<result column="s_stars" property="s_stars" />
+			<result column="p_num" property="p_num"/>
+		</association>
+	</resultMap>
+
+	<select id="memstar" resultMap="mem_star">
+select round(avg(s_stars),1) as s_stars from stars where p_num= #{p_num}
+	</select>
+	
+	<!-- 랭킹별 사진 가져오기 -->
+	<select id="get" resultMap="mem_star">
+	    <![CDATA[
+		select p.*,b.*
+from(select rownum as aa,a.*
+from(select p_num,round(avg(s_stars),1) as s_stars from stars group by p_num order by s_stars desc)a)b , pub p
+where p.p_num = b.p_num and p.p_pub_chk ='Y' and b.aa<=5
+  ]]>
+	</select>
+	
+	<!-- 전체 펍 4개씩 가져오기 -->
+	<select id="list" parameterType="dto.PubPageDTO" resultMap="mem_star">
+		<!-- <>때문에 그대로 사용하기위해 -->
+        <![CDATA[
+       select h.*
+from(select rownum as rm, g.*
+from(select p.*, a.*
+from(select p_num as ppnum,round(avg(s_stars),1) as s_stars from stars group by p_num) a, pub p
+where p.p_num = a.ppnum(+) and p.p_pub_chk ='Y'
+order by p_num desc)g)h
+where h.rm>=#{startRow} and h.rm<=#{endRow}
+        ]]>
+	</select>
+	
+	<!-- 검색한 펍 가져오기 -->
+	<select id="search" parameterType="String" resultType="int">
+		select count(*) from pub
+		where (p_address like '%'||#{search}||'%' or p_title like '%'||#{search}||'%') and p_pub_chk='Y'
+	</select>
+
+	<!-- 검색한 펍 4개씩 가져오기 -->
+	<select id="searchlist" parameterType="dto.PubPageDTO"
+		resultMap="mem_star">
+	     <![CDATA[
+	    select h.*
+from(select rownum as rm, g.*
+from(select p.*, a.*
+from(select p_num as ppnum,round(avg(s_stars),1) as s_stars from stars group by p_num) a, pub p
+where p.p_num = a.ppnum(+) and p.p_pub_chk ='Y'
+order by p_num desc)g
+where p_address like '%'||#{search}||'%' or p_title like '%'||#{search}||'%')h
+where h.rm>=#{startRow} and h.rm<=#{endRow}
+ ]]>
+	</select>
+	
+<insert id="talko" parameterType="String">
+	    insert into talk
+values(SEQ_talk_t_num.nextval,'administer',#{id},'판매자 신청이 완료되었습니다.',to_char(sysdate,'YYYY"-"MM"-"DD HH24:MI:SS'),'N','판매자 신청결과')
+	</insert>
+	<insert id="talkc" parameterType="String">
+	    insert into talk
+values(SEQ_talk_t_num.nextval,'administer',#{id},'판매자로 등업이 부적합합니다',to_char(sysdate,'YYYY"-"MM"-"DD HH24:MI:SS'),'N','판매자 신청결과')
+	</insert>
+	<insert id="talkpo" parameterType="String">
+	    insert into talk
+values(SEQ_talk_t_num.nextval,'administer',#{id},'펍 등록이 완료되었습니다.',to_char(sysdate,'YYYY"-"MM"-"DD HH24:MI:SS'),'N','펍등록 신청결과')
+	</insert>
+	<insert id="talkpc" parameterType="String">
+	    insert into talk
+values(SEQ_talk_t_num.nextval,'administer',#{id},'펍등록이 실패하였습니다.',to_char(sysdate,'YYYY"-"MM"-"DD HH24:MI:SS'),'N','펍등록 신청결과')
+	</insert>
+	<insert id="quick" parameterType="dto.PubDTO">
+		insert into quickbar values(#{id},#{p_num})
+	</insert>
+	<select id="quickcount" parameterType="String" resultType="dto.PubDTO">
+	    select c.*
+from(select rownum as ro,b.*
+from(select rownum as rw,a.*
+from(select distinct p.*
+from pub p , quickbar q
+where q.id=#{id} and p.p_num=q.p_num)a
+order by rw desc)b)c
+where 3>=ro
+	</select>
+	<select id="quickcheck" parameterType="dto.PubDTO" resultType="int">
+	    select count(*)
+from quickbar
+where id=#{id} and p_num=#{p_num}
+	</select>
+	<select id="pubcountarr" resultType="String">
+		select pub_ok_date from pub where p_pub_chk='Y' 	    
+	</select>
+	
+</mapper>

@@ -1,0 +1,59 @@
+.circle3 {
+	width: 50px;
+	height: 50px;
+	position: relative;
+	left: 550px;
+	margin-bottom: 40px;
+	border-radius: 25px;
+	-moz-border-radius: 25px;
+	-webkit-border-radius: 25px;
+	-ms-border-radius: 25px;
+	-khtml-border-radius: 25px;
+	-o-border-radius: 25px;
+	background: #66F;
+	font: normal 30px/50px "나눔고딕", "돋움", "굴림";
+	color: #fff;
+	text-align: center;
+	border-radius: 25px;
+	border-radius: 25px;
+}
+
+.reply {
+	margin-top: 15px;
+}
+
+#reply_id {
+	display: block;
+	width: 100px;
+	height: 100%;
+	float: left;
+}
+
+#reply_content {
+	display: block;
+	width: 320px;
+	height: 100%;
+	float: left;
+}
+
+#reply_btn {
+	display: inline-block;
+	width: 80px;
+}
+
+.col-md-12 {
+	margin-top: 10px;
+}
+
+.updebtn {
+	display: inline-block;
+	float: left;
+	width: 40px;
+	height: 100%;
+	text-align: center;
+}
+
+.recon {
+	width: 520px;
+	height: 20px;
+}

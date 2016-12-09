@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="social">
+
+	<!-- 댓글등록 -->
+	<insert id="socialins" parameterType="dto.SocialDTO">
+		insert into SOCIAL
+		values(SEQ_social_s_num.nextval, #{id}, #{s_upload, jdbcType=VARCHAR},
+		#{s_content}, 0, sysdate)
+	</insert>
+
+	<!-- 뷰 불러오기 -->
+	<resultMap type="dto.SocialDTO" id="soso" autoMapping="false">
+		<result column="s_num" property="s_num" />
+		<result column="id" property="id" />
+		<result column="s_upload" property="s_upload" />
+		<result column="s_content" property="s_content" />
+		<result column="s_like" property="s_like" />
+		<result column="s_date" property="s_date" />
+		<association property="nice" javaType="dto.SocialNiceDTO"
+			autoMapping="false">
+			<result column="sns_num" property="s_num" />
+			<result column="s_nice" property="s_nice" />
+		</association>
+		<association property="mem" javaType="dto.MemDTO"
+			autoMapping="false">
+			<result column="face" property="face" />
+		</association>
+	</resultMap>
+
+	<select id="view" parameterType="dto.SocialPageDTO" resultMap="soso">
+	<![CDATA[
+select h.*
+		from(select rownum as rm, g.*
+		from (select s.*, n.s_num as sns_num,
+		s_nice, m.face
+		from SOCIAL s,
+		(select s_num, sum(s_nice) as s_nice from SOCIALNICE
+		group by s_num) n,
+		members m
+		where s.s_num = n.s_num(+) and
+		s.id = m.id(+)
+		order by s.s_num desc) g) h
+		where h.rm>=#{startRow} and h.rm<=#{endRow}
+ ]]>
+	</select>
+
+	<!-- 리플 넣자 -->
+	<select id="review" resultType="dto.R_socialDTO">
+		select * from R_SOCIAL order by
+		rs_num
+	</select>
+
+	<!-- 리플 인설트 -->
+	<insert id="replyIns" parameterType="dto.R_socialDTO">
+		insert into R_SOCIAL
+		values(#{s_num}, SEQ_r_social_rs_num.nextval, #{rs_content},
+		#{id})
+	</insert>
+
+	<!-- 해당리플 불러오기 -->
+	<select id="replyview" parameterType="int" resultType="dto.R_socialDTO">
+		select *
+		from r_social where s_num = #{s_num} order by rs_num
+	</select>
+
+	<!-- 리플 삭제 -->
+	<delete id="replyDel" parameterType="dto.R_socialDTO">
+		delete from r_social where
+		s_num = #{s_num} and
+		rs_num = #{rs_num}
+	</delete>
+
+	<!-- 좋아요 인설트 -->
+	<insert id="niceins" parameterType="dto.SocialNiceDTO">
+		insert into socialnice
+		values(1, #{id}, ${s_num},
+		SEQ_socialnice_sn_num.nextval)
+	</insert>
+
+	<!-- 좋아요 리스트 -->
+
+	<resultMap type="dto.SocialDTO" id="nice" autoMapping="false">
+		<result column="s_num" property="s_num" />
+		<result column="id" property="id" />
+		<result column="s_upload" property="s_upload" />
+		<result column="s_content" property="s_content" />
+		<result column="s_like" property="s_like" />
+		<result column="s_date" property="s_date" />
+		<association property="nice" javaType="dto.SocialNiceDTO"
+			autoMapping="false">
+			<result column="ss_num" property="s_num" />
+			<result column="s_nice" property="s_nice" />
+		</association>
+	</resultMap>
+	<select id="niceview" parameterType="int" resultMap="nice">
+		select a.*,
+		b.s_num as ss_num, b.s_nice
+		from SOCIAL a, (select s_num,
+		sum(s_nice) as
+		s_nice from SOCIALNICE where s_num = #{s_num}
+		group by
+		s_num) b
+		where a.s_num = b.s_num(+) and
+		a.s_num = #{s_num}
+	</select>
+
+	<!-- 좋아요 삭제 -->
+	<delete id="niceDel" parameterType="dto.SocialNiceDTO">
+		delete from SOCIALNICE where
+		s_num = #{s_num} and id = #{id}
+	</delete>
+
+	<!-- 갯수 -->
+	<select id="socialcount" resultType="int">
+		select count(s_num) from
+		SOCIAL
+	</select>
+
+	<!-- 소셜삭제 -->
+	<delete id="socialDel" parameterType="int">
+		delete from social where
+		s_num = #{s_num}
+	</delete>
+
+	<!-- 파일이름 -->
+	<select id="filename" parameterType="int" resultType="String">
+		select
+		s_upload from Social where s_num = #{s_num}
+	</select>
+
+	<!-- 좋아요 중복체크 -->
+	<select id="nicechk" parameterType="dto.SocialNiceDTO"
+		resultType="dto.SocialNiceDTO">
+		select *
+		from socialnice where id = #{id} and s_num =
+		#{s_num}
+	</select>
+
+	<!-- 점수 갖고오기 체크 -->
+	<select id="nice"></select>
+</mapper>

@@ -1,0 +1,14 @@
+#color {
+	
+ background-image: url(../images/ilu.jpg);
+}
+
+/* #jumbowhite h1, #jumbowhite p{
+	color: #fff;
+	text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
+} */
+
+#border {
+	/* outline: 1px solid orange; */
+	background-color: #F5F5F5;
+}
